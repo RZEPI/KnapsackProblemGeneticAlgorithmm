@@ -31,6 +31,13 @@ def population_best(items, knapsack_max_capacity, population):
     return best_individual, best_individual_fitness
 
 
+def population_elites(population, elites, n_elites):
+    for _ in range(n_elites):
+        elite, _  = population_best(items,knapsack_max_capacity, population)
+        population.remove(elite)
+        elites.append(elite)
+
+
 def get_population_fitness(population):
     pop_fitness = 0
     for individual in population:
@@ -66,17 +73,17 @@ def get_parents(population):
     return parents
 
 
-def split_half_dna(parent):
+def split_half_dna(parent, pivot):
     parent_parts = []
-    half_len = int(len(parent)/2) 
-    parent_parts.append(parent[:half_len])
-    parent_parts.append(parent[half_len:])
+    parent_parts.append(parent[:pivot])
+    parent_parts.append(parent[pivot:])
     return parent_parts
 
 
 def get_children(parent_a, parent_b):
-    parent_part_a = split_half_dna(parent_a)
-    parent_part_b = split_half_dna(parent_b)
+    pivot = random.randint(1, len(parent_a))
+    parent_part_a = split_half_dna(parent_a, pivot)
+    parent_part_b = split_half_dna(parent_b, pivot)
     child_part_a = parent_part_a[0] + parent_part_b[1]
     child_part_b = parent_part_b[0] + parent_part_a[1]
     return child_part_a, child_part_b
@@ -102,10 +109,10 @@ def mutate_children(children):
 items, knapsack_max_capacity = get_big()
 print(items)
 
-population_size = 100
+population_size = 96
 generations = 200
 n_selection = 20
-n_elite = 1
+n_elite = 4
 
 start_time = time.time()
 best_solution = None
@@ -115,20 +122,22 @@ best_history = []
 population = initial_population(len(items), population_size)
 for _ in range(generations):
     population_history.append(population)
-
+    best_individuals = []
     # TODO: implement genetic algorithm
-    #this is selection - best individual in solution
     best_individual, best_individual_fitness = population_best(items, knapsack_max_capacity, population)
     if best_individual_fitness > best_fitness:
         best_solution = best_individual
         best_fitness = best_individual_fitness
     best_history.append(best_fitness)
+    best_individuals.append(best_individual)
+
+    population_elites(population.copy(), best_individuals, n_elite) 
 
     parents = get_parents(population)
     children = create_children(parents)
     mutate_children(children)
     population = children
-
+    population = population + best_individuals
 
 
 end_time = time.time()
