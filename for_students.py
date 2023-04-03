@@ -130,9 +130,10 @@ for _ in range(generations):
         best_fitness = best_individual_fitness
     best_history.append(best_fitness)
     best_individuals.append(best_individual)
-
-    population_elites(population.copy(), best_individuals, n_elite) 
-
+    
+    pop_copy = population.copy()
+    pop_copy.remove(best_individual)
+    population_elites(pop_copy, best_individuals, n_elite) 
     parents = get_parents(population)
     children = create_children(parents)
     mutate_children(children)
